@@ -1,0 +1,38 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title> Alumnos </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card *ngFor="let alumno of alumnos; let indice=index;">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="8">{{alumno.last_name}}, {{alumno.first_name}}</ion-col>
+        <ion-col size="1"></ion-col>
+        <ion-col size="1">
+          <button ion-button icon-only (click)="modificarAlumno(indice)" danger>
+            <ion-icon name="create-outline"></ion-icon>
+          </button>
+        </ion-col>
+        <ion-col size="1">
+          <button ion-button icon-only (click)="eliminarAlumno(indice)" danger>
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </ion-col>
+        <ion-col size="1"></ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card>
+  <ion-item>
+    <ion-button (click)="paginaInicio()" [disabled]="numeroDePagina===1">
+      <ion-icon name="power"></ion-icon>
+        </ion-button>
+    <ion-button (click)="paginaAnterior()" [disabled]="numeroDePagina===1">
+      <ion-icon name="arrow-back"></ion-icon>
+    </ion-button>
+    <ion-button (click)="paginaSiguiente()">
+      <ion-icon name="arrow-forward"></ion-icon>
+    </ion-button>
+  </ion-item>
+</ion-content>
