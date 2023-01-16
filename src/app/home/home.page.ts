@@ -260,4 +260,110 @@ eliminarAlumno(indice:number){
     this.numeroDePagina=1;
     this.getAlumnosPaginados();
   }
-}//end_class
+
+  async buscarAlumno() {
+
+
+    const alert = await this.alertController.create({
+
+      header: 'Buscar',
+
+      inputs: [
+
+        {
+
+          name: 'first_name',
+
+          type: 'text',
+
+          value: "",
+
+          placeholder: 'first_name'
+
+        },
+
+        {
+
+          name: 'last_name',
+
+          type: 'text',
+
+          id: 'last_name',
+
+          value: "",
+
+          placeholder: 'last_name'
+
+        },
+      ],
+
+      buttons: [
+
+        {
+
+          text: 'Cancel',
+
+          role: 'cancel',
+
+          cssClass: 'secondary',
+
+          handler: () => {
+
+            console.log('Confirm Cancel');
+
+          }
+
+        }, {
+
+          text: 'Ok',
+
+          handler: (data) => {
+
+            console.log(data);
+
+            var alumnoBuscar: Alumno = new Alumno( 
+
+              0,
+
+              "",
+
+              data['first_name'],
+
+              data['last_name'],
+
+              "",
+
+              "",
+
+              "",
+
+              "",
+
+              "");
+
+            this.apiService.getAlumnoBuscado(alumnoBuscar.first_name,alumnoBuscar.last_name)
+            .then((alumnos: Alumno[]) => {
+              this.alumnos = alumnos;
+              console.log(this.alumnos);
+            })
+              .catch((error: string) => {
+
+                console.log(error);
+
+              });
+             
+
+            console.log('Confirm Ok');
+
+          }
+
+        }
+
+      ]
+
+    });
+
+    await alert.present();
+
+  }//end_buscarAlumno
+  }//end_class

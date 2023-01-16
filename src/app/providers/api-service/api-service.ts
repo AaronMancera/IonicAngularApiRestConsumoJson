@@ -108,4 +108,29 @@ export class ApiServiceProvider {
     });
     return promise;
   } //getAlumnosPaginado
+
+
+  /*
+  Este metodo implementa una busqueda especofica por el nombre con un get de los alumno
+  */
+  getAlumnoBuscado(nombre,apellido): Promise<Alumno[]> {
+    let promise = new Promise<Alumno[]>((resolve, reject) => {
+      this.http
+        .get(this.URL + 'alumnos?first_name='+nombre+'&last_name='+apellido)
+        .toPromise()
+        .then((data: any) => {
+          let alumnos = new Array<Alumno>();
+          data.forEach((alumno: Alumno) => {
+            console.log(alumno);
+            alumnos.push(alumno);
+          });
+          resolve(alumnos);
+        })
+        .catch((error: Error) => {
+          reject(error.message);
+        });
+    });
+    return promise;
+  } //end_getAlumnoBuscado
+
 } //end_class
