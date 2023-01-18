@@ -10,9 +10,15 @@ import { ApiServiceProvider } from '../providers/api-service/api-service';
 })
 export class HomePage implements OnInit {
   alumnos = new Array<Alumno>();
-  numeroDePagina:number=1;
-  LIMITEDECONTENIDO:number=5;
-  constructor(private apiService: ApiServiceProvider,public alertController:AlertController) {}
+  numeroDePagina: number = 1;
+  LIMITEDECONTENIDO: number = 5;
+  firt_nameBuscado: String;
+  last_nameBuscado: String;
+  buscando: boolean = false;
+  constructor(
+    private apiService: ApiServiceProvider,
+    public alertController: AlertController
+  ) {}
   /*
 
 cuando se carga la pantalla se llama al método getAlumnos de la Api. Este es un método asíncrono que devuelve un objeto Promise del que debe ser evaluado el resultado.
@@ -26,9 +32,9 @@ Si ha ido mal el acceso (por ejemplo si no hemos lanzado jsonServer) se coge el 
     this.getAlumnosPaginados();
   }
 
-  getAlumnosPaginados():void{
+  getAlumnosPaginados(): void {
     this.apiService
-      .getAlumnosPaginado(this.numeroDePagina,this.LIMITEDECONTENIDO)
+      .getAlumnosPaginado(this.numeroDePagina, this.LIMITEDECONTENIDO)
       .then((alumnos: Alumno[]) => {
         this.alumnos = alumnos;
         console.log(this.alumnos);
@@ -44,47 +50,42 @@ este método llama al método eliminarAlumno de la Api y le pasa el id del alumn
 Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
 
 */
-eliminarAlumno(indice:number){
-  this.apiService.eliminarAlumno(this.alumnos[indice].id)
-  .then( (correcto:Boolean ) => {
-    console.log("Borrado correcto del alumno con indice: "+indice);
-    this.alumnos.splice(indice,1);
-  })
-  .catch( (error:string) => {
-      console.log("Error al borrar: "+error);
-  });
-}//end_eliminar_alumno
+  eliminarAlumno(indice: number) {
+    this.apiService
+      .eliminarAlumno(this.alumnos[indice].id)
+      .then((correcto: Boolean) => {
+        console.log('Borrado correcto del alumno con indice: ' + indice);
+        this.alumnos.splice(indice, 1);
+      })
+      .catch((error: string) => {
+        console.log('Error al borrar: ' + error);
+      });
+  } //end_eliminar_alumno
 
-/*
+  /*
 
   este método comentado permite modificar los datos del alumno mediante un alertController
 
   */
 
   async modificarAlumno(indice: number) {
-
     let alumno = this.alumnos[indice];
 
     const alert = await this.alertController.create({
-
       header: 'Modificar',
 
       inputs: [
-
         {
-
           name: 'first_name',
 
           type: 'text',
 
           value: alumno.first_name,
 
-          placeholder: 'first_name'
-
+          placeholder: 'first_name',
         },
 
         {
-
           name: 'last_name',
 
           type: 'text',
@@ -93,12 +94,10 @@ eliminarAlumno(indice:number){
 
           value: alumno.last_name,
 
-          placeholder: 'last_name'
-
+          placeholder: 'last_name',
         },
 
         {
-
           name: 'email',
 
           id: 'email',
@@ -107,12 +106,10 @@ eliminarAlumno(indice:number){
 
           value: alumno.email,
 
-          placeholder: 'email'
-
+          placeholder: 'email',
         },
 
         {
-
           name: 'gender',
 
           id: 'gender',
@@ -121,64 +118,52 @@ eliminarAlumno(indice:number){
 
           value: alumno.gender,
 
-          placeholder: 'gender'
-
+          placeholder: 'gender',
         },
 
         {
-
           name: 'avatar',
 
           value: alumno.avatar,
 
           type: 'url',
 
-          placeholder: 'avatar'
-
+          placeholder: 'avatar',
         },
 
         {
-
           name: 'address',
 
           value: alumno.address,
 
           type: 'text',
 
-          placeholder: 'address'
-
+          placeholder: 'address',
         },
 
         {
-
           name: 'city',
 
           value: alumno.city,
 
           type: 'text',
 
-          placeholder: 'city'
-
+          placeholder: 'city',
         },
 
         {
-
           name: 'postalCode',
 
           value: alumno.postalCode,
 
           type: 'text',
 
-          placeholder: 'postalCode'
-
-        }
-
+          placeholder: 'postalCode',
+        },
       ],
 
       buttons: [
-
         {
-
           text: 'Cancel',
 
           role: 'cancel',
@@ -186,21 +171,16 @@ eliminarAlumno(indice:number){
           cssClass: 'secondary',
 
           handler: () => {
-
             console.log('Confirm Cancel');
-
-          }
-
-        }, {
-
+          },
+        },
+        {
           text: 'Ok',
 
           handler: (data) => {
-
             console.log(data);
 
-            var alumnoModificado: Alumno = new Alumno( 
-
+            var alumnoModificado: Alumno = new Alumno(
               alumno.id,
 
               data['gender'],
@@ -217,131 +197,75 @@ eliminarAlumno(indice:number){
 
               data['city'],
 
-              data['postalCode']);
+              data['postalCode']
+            );
 
-            this.apiService.modificarAlumno(alumnoModificado)
+            this.apiService
+              .modificarAlumno(alumnoModificado)
 
               .then((alumno: Alumno) => {
-
                 this.alumnos[indice] = alumno;
-
               })
 
               .catch((error: string) => {
-
                 console.log(error);
-
               });
 
             console.log('Confirm Ok');
-
-          }
-
-        }
-
-      ]
-
+          },
+        },
+      ],
     });
 
     await alert.present();
+  } //end_modificarAlumno
 
-  }//end_modificarAlumno
-
-
-  paginaSiguiente():void{
+  paginaSiguiente(): void {
     this.numeroDePagina++;
-    this.getAlumnosPaginados();
+    if ((this.buscando = true)) {
+      this.apiService
+        .getAlumnoBuscadoPaginado(
+          this.firt_nameBuscado,
+          this.last_nameBuscado,
+          this.numeroDePagina,
+          this.LIMITEDECONTENIDO
+        )
+        .then((alumnos: Alumno[]) => {
+          this.alumnos = alumnos;
+          console.log(this.alumnos);
+        })
+        .catch((error: string) => {
+          console.log(error);
+        });
+    } else {
+      this.getAlumnosPaginados();
+    }
   }
-  paginaAnterior():void{
+  paginaAnterior(): void {
     this.numeroDePagina--;
-    this.getAlumnosPaginados();
+    if ((this.buscando = true)) {
+      this.apiService
+        .getAlumnoBuscadoPaginado(
+          this.firt_nameBuscado,
+          this.last_nameBuscado,
+          this.numeroDePagina,
+          this.LIMITEDECONTENIDO
+        )
+        .then((alumnos: Alumno[]) => {
+          this.alumnos = alumnos;
+          console.log(this.alumnos);
+        })
+        .catch((error: string) => {
+          console.log(error);
+        });
+    } else {
+      this.getAlumnosPaginados();
+    }
   }
-  paginaInicio():void{
-    this.numeroDePagina=1;
-    this.getAlumnosPaginados();
-  }
-
-  async buscarAlumno() {
-
-
-    const alert = await this.alertController.create({
-
-      header: 'Buscar',
-
-      inputs: [
-
-        {
-
-          name: 'first_name',
-
-          type: 'text',
-
-          value: "",
-
-          placeholder: 'first_name'
-
-        },
-
-        {
-
-          name: 'last_name',
-
-          type: 'text',
-
-          id: 'last_name',
-
-          value: "",
-
-          placeholder: 'last_name'
-
-        },
-      ],
-
-      buttons: [
-
-        {
-
-          text: 'Cancel',
-
-          role: 'cancel',
-
-          cssClass: 'secondary',
-
-          handler: () => {
-
-            console.log('Confirm Cancel');
-
-          }
-
-        }, {
-
-          text: 'Ok',
-
-          handler: (data) => {
-
-            console.log(data);
-
-            var alumnoBuscar: Alumno = new Alumno( 
-
-              0,
-
-              "",
-
-              data['first_name'],
-
-              data['last_name'],
-
-              "",
-
-              "",
-
-              "",
-
-              "",
-
-              "");
-
-            this.apiService.getAlumnoBuscado(alumnoBuscar.first_name,alumnoBuscar.last_name)
+  paginaInicio(): void {
+    this.numeroDePagina = 1;
+    if(this.buscando=true){
+      this.apiService.getAlumnoBuscadoPaginado(this.firt_nameBuscado,this.last_nameBuscado,this.numeroDePagina,this.LIMITEDECONTENIDO)
             .then((alumnos: Alumno[]) => {
               this.alumnos = alumnos;
               console.log(this.alumnos);
@@ -351,19 +275,103 @@ eliminarAlumno(indice:number){
                 console.log(error);
 
               });
-             
+    } else{
+      this.getAlumnosPaginados();
+    }  }
+  busqueda(): void {
+    this.numeroDePagina = 1;
+    this.buscarAlumno();
+  }
+
+  async buscarAlumno() {
+    const alert = await this.alertController.create({
+      header: 'Buscar',
+
+      inputs: [
+        {
+          name: 'first_name',
+
+          type: 'text',
+
+          value: this.firt_nameBuscado,
+
+          placeholder: 'first_name',
+        },
+
+        {
+          name: 'last_name',
+
+          type: 'text',
+
+          id: 'last_name',
+
+          value: this.last_nameBuscado,
+
+          placeholder: 'last_name',
+        },
+      ],
+
+      buttons: [
+        {
+          text: 'Cancel',
+
+          role: 'cancel',
+
+          cssClass: 'secondary',
+
+          handler: () => {
+            console.log('Confirm Cancel');
+          },
+        },
+        {
+          text: 'Ok',
+
+          handler: (data) => {
+            console.log(data);
+
+            var alumnoBuscar: Alumno = new Alumno(
+              0,
+
+              '',
+
+              data['first_name'],
+
+              data['last_name'],
+
+              '',
+
+              '',
+
+              '',
+
+              '',
+
+              ''
+            );
+
+            this.firt_nameBuscado = alumnoBuscar.first_name;
+            this.last_nameBuscado = alumnoBuscar.last_name;
+            this.apiService
+              .getAlumnoBuscadoPaginado(
+                alumnoBuscar.first_name,
+                alumnoBuscar.last_name,
+                this.numeroDePagina,
+                this.LIMITEDECONTENIDO
+              )
+              .then((alumnos: Alumno[]) => {
+                this.alumnos = alumnos;
+                console.log(this.alumnos);
+              })
+              .catch((error: string) => {
+                console.log(error);
+              });
 
             console.log('Confirm Ok');
-
-          }
-
-        }
-
-      ]
-
+          },
+        },
+      ],
     });
 
     await alert.present();
-
-  }//end_buscarAlumno
-  }//end_class
+  } //end_buscarAlumno
+} //end_class

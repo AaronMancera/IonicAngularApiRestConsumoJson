@@ -112,11 +112,32 @@ export class ApiServiceProvider {
 
   /*
   Este metodo implementa una busqueda especofica por el nombre con un get de los alumno
+  Busqueda ordemada y utilizacion del like para que sea un filtro menos especifico
   */
   getAlumnoBuscado(nombre,apellido): Promise<Alumno[]> {
     let promise = new Promise<Alumno[]>((resolve, reject) => {
       this.http
-        .get(this.URL + 'alumnos?first_name='+nombre+'&last_name='+apellido)
+        .get(this.URL + '/alumnos?_sort=first_name,last_name&_order=asc&first_name_like='+nombre+'&last_name_like='+apellido)
+        .toPromise()
+        .then((data: any) => {
+          let alumnos = new Array<Alumno>();
+          data.forEach((alumno: Alumno) => {
+            console.log(alumno);
+            alumnos.push(alumno);
+          });
+          resolve(alumnos);
+        })
+        .catch((error: Error) => {
+          reject(error.message);
+        });
+    });
+    return promise;
+  } //end_getAlumnoBuscado
+
+  getAlumnoBuscadoPaginado(nombre,apellido,numeroDePagina,limiteDeContenido): Promise<Alumno[]> {
+    let promise = new Promise<Alumno[]>((resolve, reject) => {
+      this.http
+        .get(this.URL + '/alumnos?_sort=first_name,last_name&_order=asc&first_name_like='+nombre+'&last_name_like='+apellido+'&_page='+numeroDePagina+'&_limit='+limiteDeContenido)
         .toPromise()
         .then((data: any) => {
           let alumnos = new Array<Alumno>();
