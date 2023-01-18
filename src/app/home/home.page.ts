@@ -14,11 +14,13 @@ export class HomePage implements OnInit {
   LIMITEDECONTENIDO: number = 5;
   firt_nameBuscado: String;
   last_nameBuscado: String;
-  buscando: boolean = false;
+  buscando: boolean;
   constructor(
     private apiService: ApiServiceProvider,
     public alertController: AlertController
-  ) {}
+  ) {
+    this.buscando=false;
+  }
   /*
 
 cuando se carga la pantalla se llama al método getAlumnos de la Api. Este es un método asíncrono que devuelve un objeto Promise del que debe ser evaluado el resultado.
@@ -35,6 +37,23 @@ Si ha ido mal el acceso (por ejemplo si no hemos lanzado jsonServer) se coge el 
   getAlumnosPaginados(): void {
     this.apiService
       .getAlumnosPaginado(this.numeroDePagina, this.LIMITEDECONTENIDO)
+      .then((alumnos: Alumno[]) => {
+        this.alumnos = alumnos;
+        console.log(this.alumnos);
+      })
+      .catch((error: string) => {
+        console.log(error);
+      });
+  }
+  getAlumnosBuscadoPaginados(): void {
+    this.buscando=true;
+    this.apiService
+      .getAlumnoBuscadoPaginado(
+        this.firt_nameBuscado,
+        this.last_nameBuscado,
+        this.numeroDePagina,
+        this.LIMITEDECONTENIDO
+      )
       .then((alumnos: Alumno[]) => {
         this.alumnos = alumnos;
         console.log(this.alumnos);
@@ -222,62 +241,28 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
 
   paginaSiguiente(): void {
     this.numeroDePagina++;
-    if ((this.buscando = true)) {
-      this.apiService
-        .getAlumnoBuscadoPaginado(
-          this.firt_nameBuscado,
-          this.last_nameBuscado,
-          this.numeroDePagina,
-          this.LIMITEDECONTENIDO
-        )
-        .then((alumnos: Alumno[]) => {
-          this.alumnos = alumnos;
-          console.log(this.alumnos);
-        })
-        .catch((error: string) => {
-          console.log(error);
-        });
+    if (this.buscando == true) {
+      this.getAlumnosBuscadoPaginados();
     } else {
       this.getAlumnosPaginados();
     }
   }
   paginaAnterior(): void {
     this.numeroDePagina--;
-    if ((this.buscando = true)) {
-      this.apiService
-        .getAlumnoBuscadoPaginado(
-          this.firt_nameBuscado,
-          this.last_nameBuscado,
-          this.numeroDePagina,
-          this.LIMITEDECONTENIDO
-        )
-        .then((alumnos: Alumno[]) => {
-          this.alumnos = alumnos;
-          console.log(this.alumnos);
-        })
-        .catch((error: string) => {
-          console.log(error);
-        });
+    if ((this.buscando == true)) {
+      this.getAlumnosBuscadoPaginados();
     } else {
       this.getAlumnosPaginados();
     }
   }
   paginaInicio(): void {
     this.numeroDePagina = 1;
-    if(this.buscando=true){
-      this.apiService.getAlumnoBuscadoPaginado(this.firt_nameBuscado,this.last_nameBuscado,this.numeroDePagina,this.LIMITEDECONTENIDO)
-            .then((alumnos: Alumno[]) => {
-              this.alumnos = alumnos;
-              console.log(this.alumnos);
-            })
-              .catch((error: string) => {
-
-                console.log(error);
-
-              });
-    } else{
+    if ((this.buscando == true)) {
+      this.getAlumnosBuscadoPaginados();
+    } else {
       this.getAlumnosPaginados();
-    }  }
+    }
+  }
   busqueda(): void {
     this.numeroDePagina = 1;
     this.buscarAlumno();
@@ -351,21 +336,7 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
 
             this.firt_nameBuscado = alumnoBuscar.first_name;
             this.last_nameBuscado = alumnoBuscar.last_name;
-            this.apiService
-              .getAlumnoBuscadoPaginado(
-                alumnoBuscar.first_name,
-                alumnoBuscar.last_name,
-                this.numeroDePagina,
-                this.LIMITEDECONTENIDO
-              )
-              .then((alumnos: Alumno[]) => {
-                this.alumnos = alumnos;
-                console.log(this.alumnos);
-              })
-              .catch((error: string) => {
-                console.log(error);
-              });
-
+            this.getAlumnosBuscadoPaginados();
             console.log('Confirm Ok');
           },
         },
