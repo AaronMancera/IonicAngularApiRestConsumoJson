@@ -11,6 +11,10 @@ const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'modificar-alert',
+    loadChildren: () => import('./modificar-alert/modificar-alert.module').then( m => m.ModificarAlertPageModule)
+  },
 ];
 
 @NgModule({

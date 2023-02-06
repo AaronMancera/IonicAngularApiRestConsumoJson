@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
 import { Alumno } from '../modelo/Alumno';
+import { ModificarAlertPage } from '../modificar-alert/modificar-alert.page';
 import { ApiServiceProvider } from '../providers/api-service/api-service';
 
 @Component({
@@ -17,7 +18,8 @@ export class HomePage implements OnInit {
   buscando: boolean;
   constructor(
     private apiService: ApiServiceProvider,
-    public alertController: AlertController
+    public alertController: AlertController,
+    public modalController: ModalController
   ) {
     this.buscando=false;
   }
@@ -87,6 +89,7 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
 
   */
 
+  /*
   async modificarAlumno(indice: number) {
     let alumno = this.alumnos[indice];
 
@@ -238,7 +241,7 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
 
     await alert.present();
   } //end_modificarAlumno
-
+*/
   paginaSiguiente(): void {
     this.numeroDePagina++;
     if (this.buscando == true) {
@@ -345,4 +348,35 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
 
     await alert.present();
   } //end_buscarAlumno
+
+  /*
+  este método pasa a un activity abierto en modal el objeto alumno que se encuentra en la posición de la lista que se ha pulsado.
+  El activity tiene un formulario para modificar los datos.
+  Si los datos son válidos y se pulsa aceptar en el activity se devuelve el objeto alumno con los datos modificados.
+  En este caso se actualiza el objeto alumno del array con los nuevos datos.
+  Si se pulsa cancelar en el activity se devuelve null.
+  */
+
+  async modificarAlumno(indice: number) {
+    const modal = await this.modalController.create({
+      component: ModificarAlertPage,
+      componentProps: {
+        'alumnoJson': JSON.stringify(this.alumnos[indice])
+      }
+    });
+
+    modal.onDidDismiss().then((dataAlumnoModificado) => {
+      let alumnoModificado:Alumno=dataAlumnoModificado['data'];
+      if (alumnoModificado != null) {
+        this.apiService.modificarAlumno(alumnoModificado)
+          .then((alumno: Alumno) => {
+            this.alumnos[indice] = alumno;  //si se ha modificado en la api se actualiza en la lista
+          })
+          .catch((error: string) => {
+            console.log(error);
+          });
+      }
+    });
+    return await modal.present();
+  }//end_modificarAlumno
 } //end_class
