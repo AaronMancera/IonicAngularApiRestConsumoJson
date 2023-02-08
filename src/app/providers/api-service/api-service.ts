@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Alumno } from '../../modelo/Alumno';
+import { resolve } from 'dns';
+import { rejects } from 'assert';
 
 @Injectable()
 export class ApiServiceProvider {
@@ -89,10 +91,16 @@ export class ApiServiceProvider {
   /*
   Este metodo implementa una busqueda ger de los alumno con un limite y numero de pagina
   */
-  getAlumnosPaginado(numeroDePagina,limiteDeContenido): Promise<Alumno[]> {
+  getAlumnosPaginado(numeroDePagina, limiteDeContenido): Promise<Alumno[]> {
     let promise = new Promise<Alumno[]>((resolve, reject) => {
       this.http
-        .get(this.URL + '/alumnos?_page='+numeroDePagina+'&_limit='+limiteDeContenido)
+        .get(
+          this.URL +
+            '/alumnos?_page=' +
+            numeroDePagina +
+            '&_limit=' +
+            limiteDeContenido
+        )
         .toPromise()
         .then((data: any) => {
           let alumnos = new Array<Alumno>();
@@ -109,15 +117,20 @@ export class ApiServiceProvider {
     return promise;
   } //getAlumnosPaginado
 
-
   /*
   Este metodo implementa una busqueda especofica por el nombre con un get de los alumno
   Busqueda ordemada y utilizacion del like para que sea un filtro menos especifico
   */
-  getAlumnoBuscado(nombre,apellido): Promise<Alumno[]> {
+  getAlumnoBuscado(nombre, apellido): Promise<Alumno[]> {
     let promise = new Promise<Alumno[]>((resolve, reject) => {
       this.http
-        .get(this.URL + '/alumnos?_sort=first_name,last_name&_order=asc&first_name_like='+nombre+'&last_name_like='+apellido)
+        .get(
+          this.URL +
+            '/alumnos?_sort=first_name,last_name&_order=asc&first_name_like=' +
+            nombre +
+            '&last_name_like=' +
+            apellido
+        )
         .toPromise()
         .then((data: any) => {
           let alumnos = new Array<Alumno>();
@@ -134,10 +147,25 @@ export class ApiServiceProvider {
     return promise;
   } //end_getAlumnoBuscado
 
-  getAlumnoBuscadoPaginado(nombre,apellido,numeroDePagina,limiteDeContenido): Promise<Alumno[]> {
+  getAlumnoBuscadoPaginado(
+    nombre,
+    apellido,
+    numeroDePagina,
+    limiteDeContenido
+  ): Promise<Alumno[]> {
     let promise = new Promise<Alumno[]>((resolve, reject) => {
       this.http
-        .get(this.URL + '/alumnos?_sort=first_name,last_name&_order=asc&first_name_like='+nombre+'&last_name_like='+apellido+'&_page='+numeroDePagina+'&_limit='+limiteDeContenido)
+        .get(
+          this.URL +
+            '/alumnos?_sort=first_name,last_name&_order=asc&first_name_like=' +
+            nombre +
+            '&last_name_like=' +
+            apellido +
+            '&_page=' +
+            numeroDePagina +
+            '&_limit=' +
+            limiteDeContenido
+        )
         .toPromise()
         .then((data: any) => {
           let alumnos = new Array<Alumno>();
@@ -153,5 +181,31 @@ export class ApiServiceProvider {
     });
     return promise;
   } //end_getAlumnoBuscado
+
+  /*
+  inserccion de alumnos
+  */
+  insertarAlumno(datosNuevoAlumno: Alumno): Promise<Alumno> {
+    let promise = new Promise<Alumno>((resolve, reject) => {
+      var header = { headers: { 'Content-Type': 'application/json' } };
+      //delete datosNuevoAlumno.id; //cuando se hace un post no paso el id. El id es asignado por el servidor. Quito el atributo del objeto json
+      let datos = JSON.stringify(datosNuevoAlumno);
+      this.http
+        .post(this.URL + '/alumnos/', datos, header)
+        .toPromise()
+        .then((data: any) => {
+          // Success
+          let alumno: Alumno;
+          alumno = JSON.parse(data);
+          resolve(alumno);
+        })
+        .catch((error: Error) => {
+          reject(error.message);
+        });
+    });
+    return promise;
+  } //end_insertarAlumno
+
+
 
 } //end_class

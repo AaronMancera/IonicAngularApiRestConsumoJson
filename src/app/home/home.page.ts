@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { Alumno } from '../modelo/Alumno';
 import { ModificarAlertPage } from '../modificar-alert/modificar-alert.page';
 import { ApiServiceProvider } from '../providers/api-service/api-service';
@@ -19,9 +19,10 @@ export class HomePage implements OnInit {
   constructor(
     private apiService: ApiServiceProvider,
     public alertController: AlertController,
-    public modalController: ModalController
+    public modalController: ModalController,
+    public toastController: ToastController
   ) {
-    this.buscando=false;
+    this.buscando = false;
   }
   /*
 
@@ -48,7 +49,7 @@ Si ha ido mal el acceso (por ejemplo si no hemos lanzado jsonServer) se coge el 
       });
   }
   getAlumnosBuscadoPaginados(): void {
-    this.buscando=true;
+    this.buscando = true;
     this.apiService
       .getAlumnoBuscadoPaginado(
         this.firt_nameBuscado,
@@ -252,7 +253,7 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
   }
   paginaAnterior(): void {
     this.numeroDePagina--;
-    if ((this.buscando == true)) {
+    if (this.buscando == true) {
       this.getAlumnosBuscadoPaginados();
     } else {
       this.getAlumnosPaginados();
@@ -260,7 +261,7 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
   }
   paginaInicio(): void {
     this.numeroDePagina = 1;
-    if ((this.buscando == true)) {
+    if (this.buscando == true) {
       this.getAlumnosBuscadoPaginados();
     } else {
       this.getAlumnosPaginados();
@@ -361,16 +362,17 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
     const modal = await this.modalController.create({
       component: ModificarAlertPage,
       componentProps: {
-        'alumnoJson': JSON.stringify(this.alumnos[indice])
-      }
+        alumnoJson: JSON.stringify(this.alumnos[indice]),
+      },
     });
 
     modal.onDidDismiss().then((dataAlumnoModificado) => {
-      let alumnoModificado:Alumno=dataAlumnoModificado['data'];
+      let alumnoModificado: Alumno = dataAlumnoModificado['data'];
       if (alumnoModificado != null) {
-        this.apiService.modificarAlumno(alumnoModificado)
+        this.apiService
+          .modificarAlumno(alumnoModificado)
           .then((alumno: Alumno) => {
-            this.alumnos[indice] = alumno;  //si se ha modificado en la api se actualiza en la lista
+            this.alumnos[indice] = alumno; //si se ha modificado en la api se actualiza en la lista
           })
           .catch((error: string) => {
             console.log(error);
@@ -378,5 +380,51 @@ Si el borrado ha ido mal muestro por consola el error que ha ocurrido.
       }
     });
     return await modal.present();
-  }//end_modificarAlumno
+  } //end_modificarAlumno
+
+  /*
+este método pasa a un activity abierto en modal objeto alumno recién creado.
+El activity tiene un formulario para editar los datos.
+Si los datos son válidos y se pulsa aceptar en el activity se devuelve el objeto alumno con los datos nuevos.
+En este caso se añade el nuevo objeto alumno al array.
+Si se pulsa cancelar en el activity se devuelve null.
+*/
+async nuevoAlumno() {
+
+  const modal = await this.modalController.create({
+    component: ModificarAlertPage,
+    componentProps: {
+      'alumnoJson': JSON.stringify(new Alumno(null,null,null,null,null,null,null,null,null))
+    }
+  });
+
+  modal.onDidDismiss().then((dataNuevoAlumno) => {
+    let nuevoAlumno:Alumno=dataNuevoAlumno['data'];
+    if (nuevoAlumno != null) {
+      this.apiService.insertarAlumno(nuevoAlumno)
+        .then((alumno: Alumno) => {
+          this.alumnos.push(alumno);  //si se ha insertado en la api se añade en la lista
+        })
+        .catch((error: string) => {
+          console.log(error);
+          this.presentToast("Error al insertar: " + error);
+        });
+    }
+  });
+  return await modal.present();
+} //end_nuevoAlumno
+async presentToast(message:string) {
+
+  const toast = await this.toastController.create({
+
+    message: message,
+
+    duration: 2000
+
+  });
+
+  toast.present();
+
+}
+
 } //end_class
